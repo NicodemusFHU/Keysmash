@@ -1,4 +1,16 @@
 usd = 0
+def format(n):
+    if n < 10:
+        stringnum = "0.0" + str(n)
+    elif n < 100:
+        stringnum = "0." + str(n)
+    else:
+        stringnum = str(n)
+        decimals = stringnum[-2:]
+        stringnum = stringnum[:-2]
+        stringnum = stringnum + "." + decimals
+    return stringnum
+
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
@@ -61,12 +73,12 @@ while usd < 1000000:
     #Upgrade purchase handling
     if string == "shop":
         string = ""
-        print(f"Shop")
+        print(f"===== Shop: =====")
         command = ""
         while command != "esc":
-            print(f"{value.name} ({value.count}): {value.prices[value.count+1]} ", end="")
+            print(f"{value.name} ({value.count}): ${format(value.prices[value.count+1])} ", end="")
             if crit.unlocked:
-                print(f"| {crit.name} ({crit.count}): {crit.prices[crit.count+1]} ", end="")
+                print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
             print("")
             print(f"Type purchase [upgrade name] to purchase an upgrade. Type esc to leave the shop.")
             command = input()
@@ -81,7 +93,7 @@ while usd < 1000000:
     #Calculate charge
 
     #Multiply/Beam trigger
-    last = "no"
+    '''last = "no"
     last2 = "no"
     #One used check
     try:
@@ -98,7 +110,7 @@ while usd < 1000000:
             #Test
             print(f"{string}, {last}")
     except:
-        pass
+        pass'''
 
     #Calculate $
     if len(string) % 100 == 0 and crit.count != 0 and string != "":
@@ -110,7 +122,7 @@ while usd < 1000000:
         usd += (len(string) * (value.count+1))
 
     if string != "":
-        print(f"+{added}, now ${usd}")
+        print(f"{len(string)} characters, +${format(added)}, now at ${format(usd)}")
 
 #Ending (test)
 if string != "quit":
