@@ -61,7 +61,7 @@ crit = CritUpgrade()
 
 
 def help():
-    print("Type \"shop\" to view the shop. Type \"quit\" to return to your terminal. Type \"$\" or \"balance\" to view your current $. Type \"help\" to repeat the available commands.")
+    print("Type \"shop\" to view the shop. Type \"$\" or \"balance\" to view your current $. Type \"help\" to repeat the available commands. Type \"quit\" to return to your terminal.")
 
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 help()
