@@ -1,4 +1,5 @@
 usd = 0
+questioncount = 0
 def format(n):
     if n < 10:
         stringnum = "0.0" + str(n)
@@ -60,7 +61,7 @@ crit = CritUpgrade()
 
 
 def help():
-    print("Type \"shop\" to view the shop. Type \"quit\" to return to your terminal. Type \"help\" to repeat the available commands.")
+    print("Type \"shop\" to view the shop. Type \"quit\" to return to your terminal. Type \"$\" or \"balance\" to view your current $. Type \"help\" to repeat the available commands.")
 
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 help()
@@ -69,15 +70,7 @@ while usd < 1000000:
     string = input()
     added = 0
 
-    #Help
-    if string.lower() == "help":
-        help()
-
-    #Quit
-    if string.lower() == "quit":
-        break
-    
-    #Upgrade purchase handling
+    #Shop menu
     if string.lower() == "shop":
         string = ""
         print(f"===== Shop: =====")
@@ -100,7 +93,20 @@ while usd < 1000000:
                     print("Crit!\n... but you were still in the shop.")
                 elif command.lower() != "esc":
                     print("You're still in the shop...")
-                
+
+    #Balance
+    if string.lower() == "balance" or string.lower() == "$":
+        print(f"You currently have ${format(usd)}")
+
+    #Help
+    if string.lower() == "help":
+        help()
+
+    #Quit
+    if string.lower() == "quit":
+        break
+    
+
 
     #Calculate charge
 
@@ -125,16 +131,20 @@ while usd < 1000000:
         pass'''
 
     #Calculate $
-    if len(string) % 100 == 0 and crit.count != 0 and string != "":
-        added = ((len(string) * (value.count+1)) * (crit.count+1))
-        usd += ((len(string) * (value.count+1)) * (crit.count+1))
-        print("Crit!")
-    else:
-        added = (len(string) * (value.count+1))
-        usd += (len(string) * (value.count+1))
-
-    if string != "":
+    if string != "shop" and string != "$" and string != "balance" and string != "" and string != "help" and string != "":
+        if len(string) % 100 == 0 and crit.count != 0 and string != "":
+            added = ((len(string) * (value.count+1)) * (crit.count+1))
+            usd += ((len(string) * (value.count+1)) * (crit.count+1))
+            print("Crit!")
+        else:
+            added = (len(string) * (value.count+1))
+            usd += (len(string) * (value.count+1))
         print(f"{len(string)} characters, +${format(added)}, now at ${format(usd)}")
+
+    if string == "":
+        questioncount +=1
+        print("?"*questioncount)
+
 
 #Ending (test)
 if string.lower() != "quit":
@@ -149,5 +159,7 @@ else:
 '''
 
 Max characters per input is 4095
+
+Potential upgrade: every character printed in the console counts for $ and charge calculations.
 
 '''
