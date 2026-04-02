@@ -87,7 +87,7 @@ while usd < 1000000:
             if crit.unlocked:
                 print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
             print("")
-            print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type esc to leave the shop.")
+            print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type \"esc\" to leave the shop.")
             command = input()
             if command.lower() == "purchase value":
                 value.purchase()
