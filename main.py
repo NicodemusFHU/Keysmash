@@ -1,4 +1,4 @@
-unlocked = list()
+usd = 0
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
@@ -6,6 +6,7 @@ class BaseUpgrade:
         self.prices = dict()
         self.unlocked = False
     def purchase(self):
+        global usd
         try:
             if usd >= self.prices[self.count+1]:
                 usd -= self.prices[self.count+1]
@@ -21,13 +22,15 @@ class ValueUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Value"
-        self.prices = {0:250, 1:500, 2:1250, 3: 1500, 4: 2500, 5:3000}
+        self.prices = {1:500, 2:1000, 3:3500, 4: 4500, 5: 7000}
         self.unlocked = True
     def purchase(self):
+        global usd
         try:
             if usd >= self.prices[self.count+1]:
                 usd -= self.prices[self.count+1]
                 self.count +=1
+                crit.unlock()
             else:
                 print(f"You do not have enough $ to purchase this upgrade.")
         except:
@@ -40,20 +43,19 @@ class CritUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Crit"
-        self.prices = {0:1000, 1:1750, 2:2500, 3: 3000, 4: 4500}
+        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000}
 crit = CritUpgrade()
 
-usd = 0
+
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 print("Type shop to view the shop.")
 #Recurrent input loop
 while usd < 1000000:
-    iscrit = False
     string = input()
     added = 0
 
-    #Dev loop escape
-    if string == "break":
+    #Quit
+    if string == "quit":
         break
     
     #Upgrade purchase handling
@@ -62,18 +64,20 @@ while usd < 1000000:
         print(f"Shop")
         command = ""
         while command != "esc":
-            print(f"{value.name} ({value.count}): {value.prices[value.count+1]} ")
+            print(f"{value.name} ({value.count}): {value.prices[value.count+1]} ", end="")
             if crit.unlocked:
-                print(f"| {crit.name} ({crit.count}): {crit.prices[crit.count+1]} ")
+                print(f"| {crit.name} ({crit.count}): {crit.prices[crit.count+1]} ", end="")
+            print("")
             print(f"Type purchase [upgrade name] to purchase an upgrade. Type esc to leave the shop.")
             command = input()
             if command == "purchase value":
                 value.purchase()
             elif command == "purchase crit":
-                crit.purchase
+                crit.purchase()
+            else:
+                if command != "esc":
+                    print("You're still in the shop...")
 
-
-    
     #Calculate charge
 
     #Multiply/Beam trigger
@@ -96,29 +100,10 @@ while usd < 1000000:
     except:
         pass
 
-    #Multiply first handling
-    '''if last[0] == "x" and last[1].isdigit():
-        multcount = int(last[2])
-        if multcount < 0:
-            multcount -= 1
-        string = string + string*(multcount)
-        if last2[0] == "p" and last2[1].isdigit():
-            string.append("unfinished, add the random alphanumeric function call")
-    #Beam first handling
-    if last[0] == "p" and last[1].isdigit():
-        string.append("unfinished, add the random alphanumeric function call")
-        if last2[0] == "x" and last2[1].isdigit():
-            multcount = int(last[2])
-            if multcount < 0:
-                multcount -= 1
-            string = string + string*(multcount)'''
-
     #Calculate $
-    if len(string) % 100 == 0:
-        iscrit = True
-    if iscrit == True and crit.count < 0:
-        added = ((len(string) * (value.count+1)) * crit.count+1)
-        usd += ((len(string) * (value.count+1)) * crit.count+1)
+    if len(string) % 100 == 0 and crit.count != 0 and string != "":
+        added = ((len(string) * (value.count+1)) * (crit.count+1))
+        usd += ((len(string) * (value.count+1)) * (crit.count+1))
         print("Crit!")
     else:
         added = (len(string) * (value.count+1))
@@ -128,10 +113,17 @@ while usd < 1000000:
         print(f"+{added}, now ${usd}")
 
 #Ending (test)
-if string != "break":
+if string != "quit":
     print("You win!")
 else:
-    print("Loop broken")
+    print("Quitting...")
 
 #Crit test string
 #aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+#Notes
+'''
+
+Max characters per input is 4095
+
+'''
