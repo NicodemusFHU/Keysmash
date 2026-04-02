@@ -55,40 +55,52 @@ class CritUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Crit"
-        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000}
+        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500}
 crit = CritUpgrade()
 
 
+def help():
+    print("Type \"shop\" to view the shop. Type \"quit\" to return to your terminal. Type \"help\" to repeat the available commands.")
+
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
-print("Type shop to view the shop.")
+help()
 #Recurrent input loop
 while usd < 1000000:
     string = input()
     added = 0
 
+    #Help
+    if string.lower() == "help":
+        help()
+
     #Quit
-    if string == "quit":
+    if string.lower() == "quit":
         break
     
     #Upgrade purchase handling
-    if string == "shop":
+    if string.lower() == "shop":
         string = ""
         print(f"===== Shop: =====")
         command = ""
-        while command != "esc":
+        while command.lower() != "esc":
             print(f"{value.name} ({value.count}): ${format(value.prices[value.count+1])} ", end="")
             if crit.unlocked:
                 print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
             print("")
-            print(f"Type purchase [upgrade name] to purchase an upgrade. Type esc to leave the shop.")
+            print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type esc to leave the shop.")
             command = input()
-            if command == "purchase value":
+            if command.lower() == "purchase value":
                 value.purchase()
-            elif command == "purchase crit":
+            elif command.lower() == "purchase crit":
+                if crit.unlocked == False:
+                    print("Spoilers...")
                 crit.purchase()
             else:
-                if command != "esc":
+                if len(command) % 100 == 0 and command.lower() != "esc" and crit.unlocked == True:
+                    print("Crit!\n... but you were still in the shop.")
+                elif command.lower() != "esc":
                     print("You're still in the shop...")
+                
 
     #Calculate charge
 
@@ -125,7 +137,7 @@ while usd < 1000000:
         print(f"{len(string)} characters, +${format(added)}, now at ${format(usd)}")
 
 #Ending (test)
-if string != "quit":
+if string.lower() != "quit":
     print("You win!")
 else:
     print("Quitting...")
