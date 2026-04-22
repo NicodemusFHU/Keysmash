@@ -12,6 +12,21 @@ def format(n):
         stringnum = stringnum + "." + decimals
     return stringnum
 
+class ChargeManager:
+    def __init__(self):
+        self._count = 0
+        self._capacity = 1
+
+    def chargeadd(self, s):
+        self._count += len(s)
+        if self._count > self._capacity:
+            self._count = self._capacity
+
+    def __str__(self):
+        if self._count == 1:
+            return f"{format(self._count)} charge"
+        return f"{format(self._count)} charges"
+
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
