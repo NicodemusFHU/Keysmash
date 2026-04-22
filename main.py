@@ -1,3 +1,6 @@
+import random
+import string as strlib
+
 usd = 0
 questioncount = 0
 def format(n):
@@ -26,6 +29,41 @@ class ChargeManager:
         if self._count == 1:
             return f"{format(self._count)} charge"
         return f"{format(self._count)} charges"
+    
+charge_manager = ChargeManager()
+
+class ChargedUpgrade(BaseUpgrade):
+    def removecharge(self, c):
+        charge_manager._count -= (c * 100)
+        if charge_manager._count < 0:
+            charge_manager._count = 0
+
+class MultiplyUpgrade(ChargedUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Multiply"
+        self.prices = {1: 2000, 2: 4000, 3: 7000, 4: 10000, 5: 15000}
+        self.unlocked = False
+    def multiply(self, s, x):
+        if x <= self.count:
+            self.removecharge(1)
+            return s * x
+        return s
+
+class PhotonBeamUpgrade(ChargedUpgrade):
+    def __init__(self):
+        super()._init_()
+        self.name = "Photon Beam"
+        self.prices = {1: 3000, 2: 6000, 3: 9000, 4: 13000, 5: 18000}
+        self.unlocked = False
+    
+    def beam(self, b):
+        if (b * 100) <= charge_manager.count:
+            chars = strlib.ascii_letters + strlib.digits
+            out = "".join(random.choice(chars) for _ in range(50 * (b + 1)))
+            self.removecharge(b)
+            return out
+        return ""
 
 class BaseUpgrade:
     def __init__(self):
