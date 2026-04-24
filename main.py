@@ -1,5 +1,16 @@
+import pygame
+import sys
 import random
 import string as strlib
+
+pygame.init()
+clock = pygame.time.Clock()
+screen = pygame.display.set_mode([1920, 1080])
+font = pygame.font.SysFont("consolas", 32)
+pygame.display.set_caption("Keysmash")
+bg_rect = pygame.Rect(0, 0, 1920, 1080)
+green = pygame.Color("green")
+black = pygame.Color("black")
 
 usd = 0
 questioncount = 0
@@ -32,39 +43,6 @@ class ChargeManager:
     
 charge_manager = ChargeManager()
 
-class ChargedUpgrade(BaseUpgrade):
-    def removecharge(self, c):
-        charge_manager._count -= (c * 100)
-        if charge_manager._count < 0:
-            charge_manager._count = 0
-
-class MultiplyUpgrade(ChargedUpgrade):
-    def __init__(self):
-        super().__init__()
-        self.name = "Multiply"
-        self.prices = {1: 2000, 2: 4000, 3: 7000, 4: 10000, 5: 15000}
-        self.unlocked = False
-    def multiply(self, s, x):
-        if x <= self.count:
-            self.removecharge(1)
-            return s * x
-        return s
-
-class PhotonBeamUpgrade(ChargedUpgrade):
-    def __init__(self):
-        super()._init_()
-        self.name = "Photon Beam"
-        self.prices = {1: 3000, 2: 6000, 3: 9000, 4: 13000, 5: 18000}
-        self.unlocked = False
-    
-    def beam(self, b):
-        if (b * 100) <= charge_manager.count:
-            chars = strlib.ascii_letters + strlib.digits
-            out = "".join(random.choice(chars) for _ in range(50 * (b + 1)))
-            self.removecharge(b)
-            return out
-        return ""
-
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
@@ -83,6 +61,12 @@ class BaseUpgrade:
             print(f"Cannot purchase {self.name} upgrade, max level already reached.")
     def unlock(self):
         self.unlocked = True
+
+class ChargedUpgrade(BaseUpgrade):
+    def removecharge(self, c):
+        charge_manager._count -= (c * 100)
+        if charge_manager._count < 0:
+            charge_manager._count = 0
 
 class ValueUpgrade(BaseUpgrade):
     def __init__(self):
@@ -112,15 +96,76 @@ class CritUpgrade(BaseUpgrade):
         self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500}
 crit = CritUpgrade()
 
+class MultiplyUpgrade(ChargedUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Multiply"
+        self.prices = {1: 2000, 2: 4000, 3: 7000, 4: 10000, 5: 15000}
+        self.unlocked = False
+    def multiply(self, s, x):
+        if x <= self.count:
+            self.removecharge(1)
+            return s * x
+        return s
+
+class PhotonBeamUpgrade(ChargedUpgrade):
+    def __init__(self):
+        super()._init_()
+        self.name = "Photon Beam"
+        self.prices = {1: 3000, 2: 6000, 3: 9000, 4: 13000, 5: 18000}
+        self.unlocked = False
+    
+    def beam(self, b):
+        if (b * 100) <= charge_manager.count:
+            chars = strlib.ascii_letters + strlib.digits
+            out = "".join(random.choice(chars) for _ in range(50 * (b + 1)))
+            self.removecharge(b)
+            return out
+        return ""
 
 def help():
     print("Type \"shop\" to view the shop. Type \"$\" or \"balance\" to view your current $. Type \"help\" to repeat the available commands. Type \"quit\" to return to your terminal.")
 
+previous = list()
+def enter():
+    global previous
+    global string
+    global input
+
+    if len(previous) == 10:
+        previous.pop(0)
+    previous.append(string)
+    string = str(input)
+    input = str()
+
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 help()
-#Recurrent input loop
-while usd < 1000000:
-    string = input()
+string = str()
+input = str()
+#Game loop
+running = True
+while running == True:
+    for event in pygame.event.get():
+        #Input handling
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_BACKSPACE:
+                input = input[:-1]
+            if event.key == pygame.K_RETURN:
+                enter()
+            else:
+                input += event.unicode
+        if event.type == pygame.QUIT:
+            running = False
+            pygame.quit
+            sys.exit
+
+        pygame.draw.rect(screen, black, bg_rect)
+        text = font.render(input, True, green)
+        screen.blit(text, (bg_rect.x+5, bg_rect.y+5))
+        pygame.display.flip()
+        clock.tick()
+
+
     added = 0
 
     #Shop menu
@@ -134,7 +179,7 @@ while usd < 1000000:
                 print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
             print("")
             print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type \"esc\" to leave the shop.")
-            command = input()
+            command = input
             if command.lower() == "purchase value":
                 value.purchase()
             elif command.lower() == "purchase crit":
@@ -156,8 +201,9 @@ while usd < 1000000:
         help()
 
     #Quit
-    if string.lower() == "quit":
-        break
+    #if string.lower() == "quit":
+    #    pygame.quit()
+    #    sys.exit()
     
 
 
@@ -193,10 +239,11 @@ while usd < 1000000:
             added = (len(string) * (value.count+1))
             usd += (len(string) * (value.count+1))
         print(f"{len(string)} characters, +${format(added)}, now at ${format(usd)}")
+        string = str()
 
-    if string == "":
-        questioncount +=1
-        print("?"*questioncount)
+    #if string == "":
+    #    questioncount +=1
+    #    print("?"*questioncount)
 
 
 #Ending (test)
@@ -214,5 +261,9 @@ else:
 Max characters per input is 4095
 
 Potential upgrade: every character printed in the console counts for $ and charge calculations.
+
+Todo:
+Add round counter
+Add save files
 
 '''
