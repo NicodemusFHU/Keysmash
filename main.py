@@ -7,7 +7,6 @@ import string as strlib
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode([1600, 900])
-pygame.display.set_caption("Keysmash")
 font = pygame.font.Font("inconsolata.ttf", 24)
 green = pygame.Color("green")
 black = pygame.Color("black")
@@ -147,6 +146,7 @@ rowcount = 0
 #Game loop
 running = True
 while running == True:
+    #Input textbox/quit
     for event in pygame.event.get():
         screen
         #Input handling
@@ -158,6 +158,7 @@ while running == True:
             elif event.key == pygame.K_RETURN:
                 rowcount = 0
                 enter()
+                usd=100000000
             else:
                 if len(input.split("\n")[-1]) > 100:
                     input +="\n"
@@ -171,10 +172,12 @@ while running == True:
     screen.fill(black)
     pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1225, 30+rowcount*26), 2)
     ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
-    
-    #Balance
-    screen.blit(font.render(f"${format(usd)}", True, green), (1550-len(format(usd))*5, 5))
 
+    #Balance
+    screen.blit(font.render(f"${format(usd)}", True, green), (1579-len(format(usd))*12, 5))
+
+    #Frame advancing, window title
+    pygame.display.set_caption(f"Keysmash: ${format(usd)}")
     pygame.display.flip()
     clock.tick()
 
