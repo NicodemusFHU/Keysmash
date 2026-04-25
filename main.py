@@ -122,21 +122,28 @@ class PhotonBeamUpgrade(ChargedUpgrade):
             return out
         return ""
 
-def help():
-    print("Type \"shop\" to view the shop. Type \"$\" or \"balance\" to view your current $. Type \"help\" to repeat the available commands. Type \"quit\" to return to your terminal.")
+class BigStr():
+    def __init__(self, lines=0, string=str()):
+        self.lines = lines
+        self.string = string
 
-previous = list()
+def help():
+    return(BigStr(3, "Type \"shop\" to view the shop.\nType \"$\" or \"balance\" to view your current $.\nType \"help\" to repeat the available commands.\nType \"quit\" to return to your terminal."))
+
+previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(0, "Welcome to Keysmash, spam keys on your keyboard to make $."))
+previous = list(previous)
 def enter():
     global previous
     global string
     global input
+    global rowcount
 
     if len(previous) == 10:
         previous.pop(0)
-    previous.append(string)
     string = str(input)
+    previous.append(BigStr(rowcount, string))
     input = str()
-    rowcount == 0
+    rowcount = 0
 
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 help()
@@ -156,8 +163,19 @@ while running == True:
             elif event.key == pygame.K_BACKSPACE:
                 input = input[:-1]
             elif event.key == pygame.K_RETURN:
-                rowcount = 0
                 enter()
+                if string != "help" and string != "":
+                    if len(string) % 100 == 0 and crit.count != 0 and string != "":
+                        added = ((len(string) * (value.count+1)) * (crit.count+1))
+                        usd += ((len(string) * (value.count+1)) * (crit.count+1))
+                    else:
+                        added = (len(string) * (value.count+1))
+                        usd += (len(string) * (value.count+1))
+                elif string.lower() == "help":
+                    if len(previous) == 10:
+                        previous.pop(0)
+                        previous.append(help())
+                        string = str()
             else:
                 if len(input.split("\n")[-1]) > 100:
                     input +="\n"
@@ -169,8 +187,13 @@ while running == True:
             sys.exit
 
     screen.fill(black)
+    #Textbox rendering
     pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1225, 30+rowcount*26), 2)
     ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
+
+    #Previous entry rendering
+    pygame.draw.rect(screen, green, pygame.Rect(0, 840-previous[-1].lines*26-rowcount*26, 1225, 30+previous[-1].lines*26), 2)
+    ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
 
     #Balance
     screen.blit(font.render(f"${format(usd)}", True, green), (1579-len(format(usd))*12, 5))
@@ -205,40 +228,6 @@ while running == True:
     #                print("Crit!\n... but you were still in the shop.")
     #            elif command.lower() != "esc":
     #                print("You're still in the shop...")
-
-    #Balance
-    if string.lower() == "balance" or string.lower() == "$":
-        print(f"You currently have ${format(usd)}")
-
-    #Help
-    if string.lower() == "help":
-        help()
-
-    #Quit
-    #if string.lower() == "quit":
-    #    pygame.quit()
-    #    sys.exit()
-    
-
-
-    #Calculate charge
-
-    #Calculate $
-    if string != "help" and string != "":
-        if len(string) % 100 == 0 and crit.count != 0 and string != "":
-            added = ((len(string) * (value.count+1)) * (crit.count+1))
-            usd += ((len(string) * (value.count+1)) * (crit.count+1))
-            print("Crit!")
-        else:
-            added = (len(string) * (value.count+1))
-            usd += (len(string) * (value.count+1))
-        print(f"{len(string)} characters, +${format(added)}, now at ${format(usd)}")
-        string = str()
-
-    #if string == "":
-    #    questioncount +=1
-    #    print("?"*questioncount)
-
 
 #Ending (test)
 #if string.lower() != "quit":
