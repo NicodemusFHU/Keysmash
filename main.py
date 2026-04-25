@@ -1,14 +1,14 @@
 import pygame
 import sys
+import ptext
 import random
 import string as strlib
 
 pygame.init()
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode([1920, 1080])
-font = pygame.font.SysFont("consolas", 32)
+screen = pygame.display.set_mode([1600, 900])
 pygame.display.set_caption("Keysmash")
-bg_rect = pygame.Rect(0, 0, 1920, 1080)
+font = pygame.font.Font("inconsolata.ttf", 24)
 green = pygame.Color("green")
 black = pygame.Color("black")
 
@@ -137,60 +137,72 @@ def enter():
     previous.append(string)
     string = str(input)
     input = str()
+    rowcount == 0
 
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
 help()
 string = str()
 input = str()
+rowcount = 0
 #Game loop
 running = True
 while running == True:
     for event in pygame.event.get():
+        screen
         #Input handling
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_BACKSPACE:
+            if event.key == pygame.K_BACKSPACE and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                input = str()
+            elif event.key == pygame.K_BACKSPACE:
                 input = input[:-1]
-            if event.key == pygame.K_RETURN:
+            elif event.key == pygame.K_RETURN:
+                rowcount = 0
                 enter()
             else:
+                if len(input.split("\n")[-1]) > 100:
+                    input +="\n"
+                    rowcount +=1
                 input += event.unicode
         if event.type == pygame.QUIT:
             running = False
             pygame.quit
             sys.exit
 
-        pygame.draw.rect(screen, black, bg_rect)
-        text = font.render(input, True, green)
-        screen.blit(text, (bg_rect.x+5, bg_rect.y+5))
-        pygame.display.flip()
-        clock.tick()
+    screen.fill(black)
+    pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1225, 30+rowcount*26), 2)
+    ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
+    
+    #Balance
+    screen.blit(font.render(f"${format(usd)}", True, green), (1550-len(format(usd))*5, 5))
 
+    pygame.display.flip()
+    clock.tick()
 
     added = 0
 
     #Shop menu
-    if string.lower() == "shop":
-        string = ""
-        print(f"===== Shop: =====")
-        command = ""
-        while command.lower() != "esc":
-            print(f"{value.name} ({value.count}): ${format(value.prices[value.count+1])} ", end="")
-            if crit.unlocked:
-                print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
-            print("")
-            print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type \"esc\" to leave the shop.")
-            command = input
-            if command.lower() == "purchase value":
-                value.purchase()
-            elif command.lower() == "purchase crit":
-                if crit.unlocked == False:
-                    print("Spoilers...")
-                crit.purchase()
-            else:
-                if len(command) % 100 == 0 and command.lower() != "esc" and crit.unlocked == True:
-                    print("Crit!\n... but you were still in the shop.")
-                elif command.lower() != "esc":
-                    print("You're still in the shop...")
+    #if string.lower() == "shop":
+    #    string = ""
+    #    print(f"===== Shop: =====")
+    #    command = ""
+    #    while command.lower() != "esc":
+    #        print(f"{value.name} ({value.count}): ${format(value.prices[value.count+1])} ", end="")
+    #        if crit.unlocked:
+    #            print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
+    #        print("")
+    #        print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type \"esc\" to leave the shop.")
+    #        command = input
+    #        if command.lower() == "purchase value":
+    #            value.purchase()
+    #        elif command.lower() == "purchase crit":
+    #            if crit.unlocked == False:
+    #                print("Spoilers...")
+    #            crit.purchase()
+    #        else:
+    #            if len(command) % 100 == 0 and command.lower() != "esc" and crit.unlocked == True:
+    #                print("Crit!\n... but you were still in the shop.")
+    #            elif command.lower() != "esc":
+    #                print("You're still in the shop...")
 
     #Balance
     if string.lower() == "balance" or string.lower() == "$":
@@ -209,28 +221,8 @@ while running == True:
 
     #Calculate charge
 
-    #Multiply/Beam trigger
-    '''last = "no"
-    last2 = "no"
-    #One used check
-    try:
-        if string[-1].isdigit() and (string[-2] == "p" or string[-2] == "x"):
-            last = string[-2:]
-            string = string[:-2]
-            #Test
-            print(f"{string}, {last}")
-    #Both used check
-        if string[-3].isdigit() and string[-1].isdigit() and (string[-2] == "p" or string[-2] == "x") and (string[-4] == "p" or string[-4] == "x"):
-            last = string[-2:]
-            last2 = string[-4:]
-            string = string[:-4]
-            #Test
-            print(f"{string}, {last}")
-    except:
-        pass'''
-
     #Calculate $
-    if string != "shop" and string != "$" and string != "balance" and string != "" and string != "help" and string != "":
+    if string != "help" and string != "":
         if len(string) % 100 == 0 and crit.count != 0 and string != "":
             added = ((len(string) * (value.count+1)) * (crit.count+1))
             usd += ((len(string) * (value.count+1)) * (crit.count+1))
@@ -247,10 +239,10 @@ while running == True:
 
 
 #Ending (test)
-if string.lower() != "quit":
-    print("You win!")
-else:
-    print("Quitting...")
+#if string.lower() != "quit":
+#    print("You win!")
+#else:
+#    print("Quitting...")
 
 #Crit test string
 #aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
