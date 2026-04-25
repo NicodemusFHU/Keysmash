@@ -71,7 +71,7 @@ class ValueUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Value"
-        self.prices = {1:500, 2:1000, 3:3500, 4: 4500, 5: 7000}
+        self.prices = {1:500, 2:1000, 3:3500, 4: 4500, 5: 7000, 6:"MAX"}
         self.unlocked = True
     def purchase(self):
         global usd
@@ -81,9 +81,9 @@ class ValueUpgrade(BaseUpgrade):
                 self.count +=1
                 crit.unlock()
             else:
-                print(f"You do not have enough $ to purchase this upgrade.")
+                guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
-            print(f"Cannot purchase {self.name} upgrade, max level already reached.")
+            guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
         if self.count == 0:
             crit.unlock
 value = ValueUpgrade()
@@ -92,7 +92,7 @@ class CritUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Crit"
-        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500}
+        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500, 6:"MAX"}
 crit = CritUpgrade()
 
 class MultiplyUpgrade(ChargedUpgrade):
@@ -132,17 +132,33 @@ def help():
 
 previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(0, "Welcome to Keysmash, spam keys on your keyboard to make $."))
 previous = list(previous)
+added = 0
+previouslen = 0
+def guiprint(rc, s):
+    global previous
+    if len(previous) == 10:
+        previous.pop(0)
+    previous.append(BigStr(rc, s))
 def enter():
     global previous
     global string
     global input
     global rowcount
+    global added
+    global value
+    global crit
+    global previouslen
 
     if len(previous) == 10:
         previous.pop(0)
     string = str(input)
     previous.append(BigStr(rowcount, string))
     input = str()
+    previouslen = len(string)
+    if len(string) % 100 == 0 and crit.count != 0 and string != "":
+        added = ((len(string) * (value.count+1)) * (crit.count+1))
+    else:
+        added = (len(string) * (value.count+1))
     rowcount = 0
 
 print("Welcome to Keysmash, spam keys on your keyboard to make $.")
@@ -166,10 +182,8 @@ while running == True:
                 enter()
                 if string != "help" and string != "":
                     if len(string) % 100 == 0 and crit.count != 0 and string != "":
-                        added = ((len(string) * (value.count+1)) * (crit.count+1))
                         usd += ((len(string) * (value.count+1)) * (crit.count+1))
                     else:
-                        added = (len(string) * (value.count+1))
                         usd += (len(string) * (value.count+1))
                 elif string.lower() == "help":
                     if len(previous) == 10:
@@ -181,29 +195,45 @@ while running == True:
                     input +="\n"
                     rowcount +=1
                 input += event.unicode
+        #External quit handling
         if event.type == pygame.QUIT:
             running = False
             pygame.quit
             sys.exit
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                if mouse[0] > 1225 and mouse[1] >= 30 and mouse[1] < 200:
+                    value.purchase()
 
+
+    #Mouse position
+    mouse = pygame.mouse.get_pos()
+    
     screen.fill(black)
     #Textbox rendering
     pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1225, 30+rowcount*26), 2)
     ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
 
     #Previous entry rendering
-    pygame.draw.rect(screen, green, pygame.Rect(0, 840-previous[-1].lines*26-rowcount*26, 1225, 30+previous[-1].lines*26), 2)
+    pygame.draw.line(screen, green, (0, 840-previous[-1].lines*26-rowcount*26), (1225, 840-previous[-1].lines*26-rowcount*26), 2)
     ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
 
-    #Balance
-    screen.blit(font.render(f"${format(usd)}", True, green), (1579-len(format(usd))*12, 5))
+    #Balance rendering
+    screen.blit(font.render(f"${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
+    #$ gained rendering
+    if mouse[0] < 1226 and mouse[1] > 840-previous[-1].lines*26-rowcount*26 and mouse[1] < 840+previous[-1].lines*26-rowcount*26:
+        screen.blit(font.render(f"{previouslen} characters, +${format(added)}", False, True, green), (1225, 840-previous[-1].lines*26-rowcount*26))
+
+    #Shop rendering
+    screen.blit(font.render(f"({value.count}/5) ${format(value.prices[value.count+1])}", False, True, green), (1226, 30))
+    ptext.draw(f"\t\t\t\t- Value -\n\tIncreases base earnings", (1226, 30), color=green, fontname="inconsolata.ttf")
+    if mouse[0] > 1225 and mouse[1] > 25 and mouse[1] < 110: 
+        pygame.draw.rect(screen, green, pygame.Rect(1225, 30, 375, 80), 2)
 
     #Frame advancing, window title
     pygame.display.set_caption(f"Keysmash: ${format(usd)}")
     pygame.display.flip()
     clock.tick()
-
-    added = 0
 
     #Shop menu
     #if string.lower() == "shop":
