@@ -158,7 +158,6 @@ while running == True:
             elif event.key == pygame.K_RETURN:
                 rowcount = 0
                 enter()
-                usd=100000000
             else:
                 if len(input.split("\n")[-1]) > 100:
                     input +="\n"
