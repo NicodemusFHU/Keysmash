@@ -25,8 +25,6 @@ def format(n):
         stringnum = stringnum + "." + decimals
     return stringnum
 
-
-
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
@@ -46,12 +44,6 @@ class BaseUpgrade:
     def unlock(self):
         self.unlocked = True
 
-class PoweredUpgrade(BaseUpgrade):
-    def removecharge(self, c):
-        charge._count -= (c * 100)
-        if charge._count < 0:
-            charge._count = 0
-
 class ValueUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
@@ -69,27 +61,24 @@ class ValueUpgrade(BaseUpgrade):
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
-        if self.count == 0:
-            crit.unlock
 value = ValueUpgrade()
 
 class CritUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
+        self.name = "Crit"
+        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500, 6:"MAX"}
     def purchase(self):
         global usd
         try:
             if usd >= self.prices[self.count+1]:
                 usd -= self.prices[self.count+1]
                 self.count +=1
-                crit.unlock()
+                charge.unlock()
             else:
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
-        if self.count == 0:
-            charge.unlock
-
 crit = CritUpgrade()
 
 class ChargeUpgrade(BaseUpgrade):
@@ -100,15 +89,19 @@ class ChargeUpgrade(BaseUpgrade):
         self.charges = 0
 
     def chargeadd(self, s):
+        global addedcharges
         self.charges += len(s)
-        if self.charges > self.count+1:
-            self.charges = int(self.count+1)
+        addedcharges = len(s)
+        if self.charges > self.count*100:
+            self.charges = int(self.count*100)
 
-    def __str__(self):
-        if self.charges == 1:
-            return f"{format(self.charges)} charge"
-        return f"{format(self.charges)} charges"
 charge = ChargeUpgrade()
+
+class PoweredUpgrade(BaseUpgrade):
+    def removecharge(self, c):
+        charge._count -= (c * 100)
+        if charge._count < 0:
+            charge._count = 0
 
 class MultiplyUpgrade(PoweredUpgrade):
     def __init__(self):
@@ -147,7 +140,7 @@ previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigSt
 previous = list(previous)
 added = 0
 previouslen = 0
-addedcharge = 0
+addedcharges = 0
 totalchr = 0
 def guiprint(rc, s):
     global previous
@@ -164,7 +157,7 @@ def enter():
     global crit
     global previouslen
     global round
-    global addedcharge
+    global addedcharges
     global totalchr
 
     if len(previous) == 10:
@@ -181,6 +174,8 @@ def enter():
         totalchr += len(string)
     rowcount = 0
     round += 1
+    if charge.unlocked:
+        charge.chargeadd(string)
 
 string = str()
 input = str()
@@ -220,6 +215,8 @@ while running == True:
                     value.purchase()
                 if mouse[0] > 1209 and mouse[1] > 115 and mouse[1] < 195:
                     crit.purchase()
+                if mouse[0] > 1209 and mouse[1] > 200 and mouse[1] < 280:
+                    charge.purchase()
 
 
     #Mouse position
@@ -234,10 +231,9 @@ while running == True:
     ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
 
     #Stats rendering
-
     if previous[-1].string != "Welcome to Keysmash, spam keys on your keyboard to make $." and previous[-1]:
-        if multiply.count > 0:
-            screen.blit(font.render(f"+${format(added)}, +*{format(addedcharge)}", True, green), (1211, 870))
+        if charge.count > 0:
+            screen.blit(font.render(f"+${format(added)}, +*{format(addedcharges)}", True, green), (1211, 870))
         else:
             screen.blit(font.render(f"+${format(added)}", True, green), (1211, 870))
         screen.blit(font.render(f"Last: {previouslen} characters,", True, green), (1211, 840))
@@ -245,10 +241,10 @@ while running == True:
         screen.blit(font.render(f"Round: {round}", True, green), (1211, 780))
 
     #Balance rendering
-    if charge.unlocked:
-        screen.blit(font.render(f"*{format(charge.charges)}${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
+    if charge.count > 0:
+        screen.blit(font.render(f"*{format(charge.charges)}/{charge.count}, ${format(usd)}", False, True, green), (1600-len(f"*{format(charge.charges)}/{charge.count}, ${format(usd)}")*12, 0))
     else:
-        screen.blit(font.render(f"${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
+        screen.blit(font.render(f"${format(usd)}", False, True, green), (1600-len(f"${format(usd)}")*12, 0))
 
     #Shop rendering
     #Value
@@ -262,6 +258,12 @@ while running == True:
         ptext.draw(f"\t\t\t\t\t- Crit -\nMultiplies value by {crit.count+1}\nif exact line(s) are input", (1210, 115), color=green, fontname="inconsolata.ttf")
         if mouse[0] > 1209 and mouse[1] > 115 and mouse[1] < 195: 
             pygame.draw.rect(screen, green, pygame.Rect(1209, 115, 390, 80), 2)
+    #Charge
+    if charge.unlocked:
+        screen.blit(font.render(f"({charge.count}/5) ${format(charge.prices[charge.count+1])}", False, True, green), (1210, 200))
+        ptext.draw(f"\t\t\t\t\t- Charge -\nStores kinetic energy\nfor use by powered upgrades", (1210, 200), color=green, fontname="inconsolata.ttf")
+        if mouse[0] > 1209 and mouse[1] > 200 and mouse[1] < 280:
+            pygame.draw.rect(screen, green, pygame.Rect(1209, 200, 390, 80), 2)
 
     #Frame advancing, window title
     pygame.display.set_caption(f"Keysmash: ${format(usd)}")
