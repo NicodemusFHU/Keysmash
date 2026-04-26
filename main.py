@@ -151,8 +151,8 @@ def enter():
 
     if len(previous) == 10:
         previous.pop(0)
-    string = str(input)
-    previous.append(BigStr(rowcount, string))
+    string = input.replace("\n", "")
+    previous.append(BigStr(rowcount, input))
     input = str()
     previouslen = len(string)
     if len(string) % 100 == 0 and crit.count != 0 and string != "":
@@ -174,11 +174,11 @@ while running == True:
         screen
         #Input handling
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_BACKSPACE and pygame.key.get_mods() & pygame.KMOD_CTRL:
+            if event.key == pygame.K_BACKSPACE:
                 input = str()
-            elif event.key == pygame.K_BACKSPACE:
-                input = input[:-1]
+                rowcount = 0
             elif event.key == pygame.K_RETURN:
+                print(input)
                 enter()
                 if string != "help" and string != "":
                     if len(string) % 100 == 0 and crit.count != 0 and string != "":
@@ -191,7 +191,7 @@ while running == True:
                         previous.append(help())
                         string = str()
             else:
-                if len(input.split("\n")[-1]) > 100:
+                if len(input.split("\n")[-1]) == 100:
                     input +="\n"
                     rowcount +=1
                 input += event.unicode
@@ -217,12 +217,13 @@ while running == True:
     #Previous entry rendering
     pygame.draw.line(screen, green, (0, 840-previous[-1].lines*26-rowcount*26), (1225, 840-previous[-1].lines*26-rowcount*26), 2)
     ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    #$ gained rendering
+    if mouse[0] < 1226 and mouse[1] > 840-previous[-1].lines*26-rowcount*26 and mouse[1] < 840+previous[-1].lines*26-rowcount*26:
+        screen.blit(font.render(f"{previouslen} characters, +${format(added)}", False, True, green), (1225, 840-rowcount*26))
 
     #Balance rendering
     screen.blit(font.render(f"${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
-    #$ gained rendering
-    if mouse[0] < 1226 and mouse[1] > 840-previous[-1].lines*26-rowcount*26 and mouse[1] < 840+previous[-1].lines*26-rowcount*26:
-        screen.blit(font.render(f"{previouslen} characters, +${format(added)}", False, True, green), (1225, 840-previous[-1].lines*26-rowcount*26))
+
 
     #Shop rendering
     screen.blit(font.render(f"({value.count}/5) ${format(value.prices[value.count+1])}", False, True, green), (1226, 30))
