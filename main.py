@@ -157,7 +157,6 @@ def enter():
     global crit
     global previouslen
     global round
-    global addedcharges
     global totalchr
 
     if len(previous) == 10:
@@ -174,7 +173,7 @@ def enter():
         totalchr += len(string)
     rowcount = 0
     round += 1
-    if charge.unlocked:
+    if charge.count > 0:
         charge.chargeadd(string)
 
 string = str()
