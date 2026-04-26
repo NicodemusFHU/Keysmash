@@ -25,22 +25,7 @@ def format(n):
         stringnum = stringnum + "." + decimals
     return stringnum
 
-class ChargeManager:
-    def __init__(self):
-        self._count = 0
-        self._capacity = 1
 
-    def chargeadd(self, s):
-        self._count += len(s)
-        if self._count > self._capacity:
-            self._count = self._capacity
-
-    def __str__(self):
-        if self._count == 1:
-            return f"{format(self._count)} charge"
-        return f"{format(self._count)} charges"
-    
-charge_manager = ChargeManager()
 
 class BaseUpgrade:
     def __init__(self):
@@ -61,11 +46,11 @@ class BaseUpgrade:
     def unlock(self):
         self.unlocked = True
 
-class ChargedUpgrade(BaseUpgrade):
+class PoweredUpgrade(BaseUpgrade):
     def removecharge(self, c):
-        charge_manager._count -= (c * 100)
-        if charge_manager._count < 0:
-            charge_manager._count = 0
+        charge._count -= (c * 100)
+        if charge._count < 0:
+            charge._count = 0
 
 class ValueUpgrade(BaseUpgrade):
     def __init__(self):
@@ -91,11 +76,41 @@ value = ValueUpgrade()
 class CritUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
-        self.name = "Crit"
-        self.prices = {1:1250, 2:2500, 3:4750, 4: 6000, 5:7500, 6:"MAX"}
+    def purchase(self):
+        global usd
+        try:
+            if usd >= self.prices[self.count+1]:
+                usd -= self.prices[self.count+1]
+                self.count +=1
+                crit.unlock()
+            else:
+                guiprint(0, f"You do not have enough $ to purchase this upgrade.")
+        except:
+            guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
+        if self.count == 0:
+            charge.unlock
+
 crit = CritUpgrade()
 
-class MultiplyUpgrade(ChargedUpgrade):
+class ChargeUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Charge"
+        self.prices = {1:2500, 2:5000, 3:10000, 4: 20000, 5:40000, 6:"MAX"}
+        self.charges = 0
+
+    def chargeadd(self, s):
+        self.charges += len(s)
+        if self.charges > self.count+1:
+            self.charges = int(self.count+1)
+
+    def __str__(self):
+        if self.charges == 1:
+            return f"{format(self.charges)} charge"
+        return f"{format(self.charges)} charges"
+charge = ChargeUpgrade()
+
+class MultiplyUpgrade(PoweredUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Multiply"
@@ -106,8 +121,9 @@ class MultiplyUpgrade(ChargedUpgrade):
             self.removecharge(1)
             return s * x
         return s
+multiply = MultiplyUpgrade()
 
-class PhotonBeamUpgrade(ChargedUpgrade):
+class PhotonBeamUpgrade(PoweredUpgrade):
     def __init__(self):
         super()._init_()
         self.name = "Photon Beam"
@@ -115,7 +131,7 @@ class PhotonBeamUpgrade(ChargedUpgrade):
         self.unlocked = False
     
     def beam(self, b):
-        if (b * 100) <= charge_manager.count:
+        if (b * 100) <= charge.count:
             chars = strlib.ascii_letters + strlib.digits
             out = "".join(random.choice(chars) for _ in range(50 * (b + 1)))
             self.removecharge(b)
@@ -127,13 +143,12 @@ class BigStr():
         self.lines = lines
         self.string = string
 
-def help():
-    return(BigStr(3, "Type \"shop\" to view the shop.\nType \"$\" or \"balance\" to view your current $.\nType \"help\" to repeat the available commands.\nType \"quit\" to return to your terminal."))
-
 previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(0, "Welcome to Keysmash, spam keys on your keyboard to make $."))
 previous = list(previous)
 added = 0
 previouslen = 0
+addedcharge = 0
+totalchr = 0
 def guiprint(rc, s):
     global previous
     if len(previous) == 10:
@@ -148,6 +163,9 @@ def enter():
     global value
     global crit
     global previouslen
+    global round
+    global addedcharge
+    global totalchr
 
     if len(previous) == 10:
         previous.pop(0)
@@ -157,15 +175,17 @@ def enter():
     previouslen = len(string)
     if len(string) % 100 == 0 and crit.count != 0 and string != "":
         added = ((len(string) * (value.count+1)) * (crit.count+1))
+        totalchr += len(string)
     else:
         added = (len(string) * (value.count+1))
+        totalchr += len(string)
     rowcount = 0
+    round += 1
 
-print("Welcome to Keysmash, spam keys on your keyboard to make $.")
-help()
 string = str()
 input = str()
 rowcount = 0
+round = 0
 #Game loop
 running = True
 while running == True:
@@ -178,19 +198,13 @@ while running == True:
                 input = str()
                 rowcount = 0
             elif event.key == pygame.K_RETURN:
-                print(input)
-                enter()
-                if string != "help" and string != "":
+                if input != "":
+                    enter()
                     if len(string) % 100 == 0 and crit.count != 0 and string != "":
                         usd += ((len(string) * (value.count+1)) * (crit.count+1))
                     else:
                         usd += (len(string) * (value.count+1))
-                elif string.lower() == "help":
-                    if len(previous) == 10:
-                        previous.pop(0)
-                        previous.append(help())
-                        string = str()
-            else:
+            elif event.key != pygame.K_TAB:
                 if len(input.split("\n")[-1]) == 100:
                     input +="\n"
                     rowcount +=1
@@ -202,8 +216,10 @@ while running == True:
             sys.exit
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
-                if mouse[0] > 1225 and mouse[1] >= 30 and mouse[1] < 200:
+                if mouse[0] > 1209 and mouse[1] >= 30 and mouse[1] < 100:
                     value.purchase()
+                if mouse[0] > 1209 and mouse[1] > 115 and mouse[1] < 195:
+                    crit.purchase()
 
 
     #Mouse position
@@ -211,63 +227,46 @@ while running == True:
     
     screen.fill(black)
     #Textbox rendering
-    pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1225, 30+rowcount*26), 2)
+    pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1209, 30+rowcount*26), 2)
     ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
 
     #Previous entry rendering
-    pygame.draw.line(screen, green, (0, 840-previous[-1].lines*26-rowcount*26), (1225, 840-previous[-1].lines*26-rowcount*26), 2)
     ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
-    #$ gained rendering
-    if mouse[0] < 1226 and mouse[1] > 840-previous[-1].lines*26-rowcount*26 and mouse[1] < 840+previous[-1].lines*26-rowcount*26:
-        screen.blit(font.render(f"{previouslen} characters, +${format(added)}", False, True, green), (1225, 840-rowcount*26))
+
+    #Stats rendering
+
+    if previous[-1].string != "Welcome to Keysmash, spam keys on your keyboard to make $." and previous[-1]:
+        if multiply.count > 0:
+            screen.blit(font.render(f"+${format(added)}, +*{format(addedcharge)}", True, green), (1211, 870))
+        else:
+            screen.blit(font.render(f"+${format(added)}", True, green), (1211, 870))
+        screen.blit(font.render(f"Last: {previouslen} characters,", True, green), (1211, 840))
+        screen.blit(font.render(f"Total characters: {totalchr}", True, green), (1211, 810))
+        screen.blit(font.render(f"Round: {round}", True, green), (1211, 780))
 
     #Balance rendering
-    screen.blit(font.render(f"${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
-
+    if charge.unlocked:
+        screen.blit(font.render(f"*{format(charge.charges)}${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
+    else:
+        screen.blit(font.render(f"${format(usd)}", False, True, green), (1588-len(format(usd))*12, 5))
 
     #Shop rendering
-    screen.blit(font.render(f"({value.count}/5) ${format(value.prices[value.count+1])}", False, True, green), (1226, 30))
-    ptext.draw(f"\t\t\t\t- Value -\n\tIncreases base earnings", (1226, 30), color=green, fontname="inconsolata.ttf")
-    if mouse[0] > 1225 and mouse[1] > 25 and mouse[1] < 110: 
-        pygame.draw.rect(screen, green, pygame.Rect(1225, 30, 375, 80), 2)
+    #Value
+    screen.blit(font.render(f"({value.count}/5) ${format(value.prices[value.count+1])}", False, True, green), (1210, 30))
+    ptext.draw(f"\t\t\t\t\t- Value -\nIncreases base earnings\nper character", (1210, 30), color=green, fontname="inconsolata.ttf")
+    if mouse[0] > 1209 and mouse[1] > 25 and mouse[1] < 110: 
+        pygame.draw.rect(screen, green, pygame.Rect(1209, 30, 390, 80), 2)
+    #Crit
+    if crit.unlocked:
+        screen.blit(font.render(f"({crit.count}/5) ${format(crit.prices[crit.count+1])}", False, True, green), (1210, 115))
+        ptext.draw(f"\t\t\t\t\t- Crit -\nMultiplies value by {crit.count+1}\nif exact line(s) are input", (1210, 115), color=green, fontname="inconsolata.ttf")
+        if mouse[0] > 1209 and mouse[1] > 115 and mouse[1] < 195: 
+            pygame.draw.rect(screen, green, pygame.Rect(1209, 115, 390, 80), 2)
 
     #Frame advancing, window title
     pygame.display.set_caption(f"Keysmash: ${format(usd)}")
     pygame.display.flip()
     clock.tick()
-
-    #Shop menu
-    #if string.lower() == "shop":
-    #    string = ""
-    #    print(f"===== Shop: =====")
-    #    command = ""
-    #    while command.lower() != "esc":
-    #        print(f"{value.name} ({value.count}): ${format(value.prices[value.count+1])} ", end="")
-    #        if crit.unlocked:
-    #            print(f"| {crit.name} ({crit.count}): ${format(crit.prices[crit.count+1])} ", end="")
-    #        print("")
-    #        print(f"Type \"purchase [upgrade name]\" to purchase an upgrade. Type \"esc\" to leave the shop.")
-    #        command = input
-    #        if command.lower() == "purchase value":
-    #            value.purchase()
-    #        elif command.lower() == "purchase crit":
-    #            if crit.unlocked == False:
-    #                print("Spoilers...")
-    #            crit.purchase()
-    #        else:
-    #            if len(command) % 100 == 0 and command.lower() != "esc" and crit.unlocked == True:
-    #                print("Crit!\n... but you were still in the shop.")
-    #            elif command.lower() != "esc":
-    #                print("You're still in the shop...")
-
-#Ending (test)
-#if string.lower() != "quit":
-#    print("You win!")
-#else:
-#    print("Quitting...")
-
-#Crit test string
-#aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 #Notes
 '''
