@@ -108,12 +108,10 @@ class MultiplyUpgrade(PoweredUpgrade):
         super().__init__()
         self.name = "Multiply"
         self.prices = {1: 2000, 2: 4000, 3: 7000, 4: 10000, 5: 15000}
-        self.unlocked = False
     def multiply(self, s, x):
         if x <= self.count:
             self.removecharge(1)
             return s * x
-        return s
 multiply = MultiplyUpgrade()
 
 class PhotonBeamUpgrade(PoweredUpgrade):
@@ -121,7 +119,6 @@ class PhotonBeamUpgrade(PoweredUpgrade):
         super()._init_()
         self.name = "Photon Beam"
         self.prices = {1: 3000, 2: 6000, 3: 9000, 4: 13000, 5: 18000}
-        self.unlocked = False
     
     def beam(self, b):
         if (b * 100) <= charge.count:
