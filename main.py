@@ -156,14 +156,14 @@ class End(BaseUpgrade):
     def __init__(self):
         super().__init__()
         self.name = "Ending"
-        self.prices = {1:10000000, 2:"MAX"}
+        self.prices = {1:100000000, 2:"MAX"}
     def purchase(self):
         global usd
         try:
             if usd >= self.prices[self.count+1]:
                 usd -= self.prices[self.count+1]
                 self.count +=1
-                guiprint(0, f"Now that you've split from the company, each character has a base value of $1.00")
+                guiprint(0, f"Now that you've split from The Corporation, each character has a base value of $1.00")
             else:
                 guiprint(0, f"You do not have enough $.")
         except:
@@ -175,7 +175,7 @@ class BigStr():
         self.lines = lines
         self.string = string
 
-previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(0, "Welcome to Keysmash, spam keys on your keyboard to make $."))
+previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(1, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character."))
 previous = list(previous)
 added = 0
 previouslen = 0
@@ -222,12 +222,20 @@ def enter():
             previous[-1].lines += 1
         multiplyuses = 0
     previouslen = len(string)
-    if len(string) % 100 == 0 and crit.count != 0 and string != "":
-        added = ((len(string) * (value.count+1)) * (crit.count+1))
-        totalchr += len(string)
+    if end.unlocked:
+        if len(string) % 100 == 0 and crit.count != 0 and string != "":
+            added = ((len(string) * 100 * (value.count+1)) * (crit.count+1))
+            totalchr += len(string)
+        else:
+            added = (len(string) * 100 * (value.count+1))
+            totalchr += len(string)
     else:
-        added = (len(string) * (value.count+1))
-        totalchr += len(string)
+        if len(string) % 100 == 0 and crit.count != 0 and string != "":
+            added = ((len(string) * (value.count+1)) * (crit.count+1))
+            totalchr += len(string)
+        else:
+            added = (len(string) * (value.count+1))
+            totalchr += len(string)
     rowcount = 0
     round += 1
 
@@ -318,6 +326,17 @@ while running == True:
 
     #Previous entry rendering
     ptext.draw(previous[-1].string, (5, 840-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-2].string, (5, 805-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-3].string, (5, 770-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-4].string, (5, 735-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-5].string, (5, 700-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-6].string, (5, 665-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-7].string, (5, 630-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-8].string, (5, 595-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-9].string, (5, 560-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    ptext.draw(previous[-10].string, (5, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    if previous[-10].string != "":
+        pygame.draw.line(screen, green, (0, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), (1211, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), 2)
 
     #Powered upgrade button rendering
     if multiply.count > 0:
@@ -328,7 +347,7 @@ while running == True:
         screen.blit(font.render(f"+{photonbeamuses*50}", False, True, green), (1211, 720))
 
     #Stats rendering
-    if previous[-1].string != "Welcome to Keysmash, spam keys on your keyboard to make $." and previous[-1]:
+    if previous[-1].string != "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character." and previous[-1]:
         if charge.count > 0:
             screen.blit(font.render(f"+${format(added)}, +*{format(addedcharges)}", True, green), (1211, 870))
         else:
@@ -379,7 +398,7 @@ while running == True:
     #End
     if end.unlocked:
         screen.blit(font.render(f"({end.count}/1) ${format(end.prices[end.count+1])}", False, True, green), (1210, 455))
-        ptext.draw(f"\t\t\t\t- {end.name} -\nSplit off from The Company,\nends the game", (1210, 455), color=green, fontname="inconsolata.ttf")
+        ptext.draw(f"\t\t\t\t\t- {end.name} -\nSplit off from The Corporation,\nthe end of Keysmash", (1210, 455), color=green, fontname="inconsolata.ttf")
         if mouse[0] > 1209 and mouse[1] > 455 and mouse[1] < 535:
             pygame.draw.rect(screen, green, pygame.Rect(1209, 455, 390, 80), 2)
 
