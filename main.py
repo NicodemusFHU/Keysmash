@@ -10,7 +10,7 @@ font = pygame.font.Font("inconsolata.ttf", 24)
 green = pygame.Color("green")
 black = pygame.Color("black")
 
-usd = 0
+usd = 9999999
 questioncount = 0
 def format(n):
     if n == "MAX":
@@ -38,6 +38,8 @@ class BaseUpgrade:
             if usd >= self.prices[self.count+1]:
                 usd -= self.prices[self.count+1]
                 self.count +=1
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
+                    end.unlock()
             else:
                 print(f"You do not have enough $ to purchase this upgrade.")
         except:
@@ -58,6 +60,8 @@ class ValueUpgrade(BaseUpgrade):
                 usd -= self.prices[self.count+1]
                 self.count +=1
                 crit.unlock()
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
+                    end.unlock()
             else:
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
@@ -76,6 +80,8 @@ class CritUpgrade(BaseUpgrade):
                 usd -= self.prices[self.count+1]
                 self.count +=1
                 charge.unlock()
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
+                    end.unlock()
             else:
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
@@ -104,7 +110,7 @@ class ChargeUpgrade(BaseUpgrade):
                 self.count +=1
                 multiply.unlock()
                 photonbeam.unlock()
-                if self.count == 10:
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
                     end.unlock()
             else:
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
@@ -135,6 +141,21 @@ class MultiplyUpgrade(PoweredUpgrade):
         except ValueError:
             guiprint(0, "Insufficient charge to use Multiply")
             return s
+        
+    def purchase(self):
+        global usd
+        try:
+            if usd >= self.prices[self.count+1]:
+                usd -= self.prices[self.count+1]
+                self.count +=1
+                if self.count == 1:
+                    guiprint(0, "Left/right click on the \"X0\" button to increment/decrement Multiply uses for your current input.")
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
+                    end.unlock()
+            else:
+                guiprint(0, f"You do not have enough $ to purchase this upgrade.")
+        except:
+            guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
 multiply = MultiplyUpgrade()
 
 class PhotonBeamUpgrade(PoweredUpgrade):
@@ -146,10 +167,26 @@ class PhotonBeamUpgrade(PoweredUpgrade):
     def beam(self, s, b):
         try:
             self.removecharge(b)
-            return s.join(random.choice("`~1!2@3#4$5%6^7&8*9(0)qQwWeErRtTyYuUiIoOpP[{]}\\|aAsSdDfFgGhHjJkKlL;:\'\"zZxXcCvVbBnNmM,<.>/?") for _ in range(50 * (b+1)))
+            return s.join(random.choice("`~1!2@3#4$5%6^7&8*9(0)qQwWeErRtTyYuUiIoOpP[{]}\\|aAsSdDfFgGhHjJkKlL;:\'\"zZxXcCvVbBnNmM,<.>/?") for _ in range(100 * (b+1)))
         except ValueError:
             guiprint(0, "Insufficient charge to use Photon Beam")
             return s
+        
+    def purchase(self):
+        global usd
+        try:
+            if usd >= self.prices[self.count+1]:
+                usd -= self.prices[self.count+1]
+                self.count +=1
+                if self.count == 1:
+                    guiprint(0, "Left/right click on the \"+0\" button to increment/decrement Photon Beam uses for your current input.")
+                if value.count > 4 and crit.count > 4 and charge.count > 9 and multiply.count > 4 and photonbeam.count > 4:
+                    end.unlock()
+            else:
+                guiprint(0, f"You do not have enough $ to purchase this upgrade.")
+        except:
+            guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
+
 photonbeam = PhotonBeamUpgrade()
 
 class End(BaseUpgrade):
@@ -175,7 +212,7 @@ class BigStr():
         self.lines = lines
         self.string = string
 
-previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(1, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character."))
+previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(4, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained."))
 previous = list(previous)
 added = 0
 previouslen = 0
@@ -212,7 +249,7 @@ def enter():
     if photonbeamuses > 0:
         string = photonbeam.beam(string, photonbeamuses)
         if previous[-1].string != "Insufficient charge to use Photon Beam":
-            previous[-1].string += f"\n+{photonbeamuses*50}"
+            previous[-1].string += f"\n+{photonbeamuses * 100}"
             previous[-1].lines += 1
         photonbeamuses = 0
     if multiplyuses > 0:
@@ -344,10 +381,10 @@ while running == True:
         screen.blit(font.render(f"X{multiplyuses}", False, True, green), (1211, 750))
     if photonbeam.count > 0:
         pygame.draw.rect(screen, green, pygame.Rect(1211, 720, 26, 26))
-        screen.blit(font.render(f"+{photonbeamuses*50}", False, True, green), (1211, 720))
+        screen.blit(font.render(f"+{photonbeamuses*100}", False, True, green), (1211, 720))
 
     #Stats rendering
-    if previous[-1].string != "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character." and previous[-1]:
+    if previous[-1].string != "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained." and previous[-1]:
         if charge.count > 0:
             screen.blit(font.render(f"+${format(added)}, +*{format(addedcharges)}", True, green), (1211, 870))
         else:
@@ -386,13 +423,13 @@ while running == True:
     #Multiply
     if multiply.unlocked:
         screen.blit(font.render(f"({multiply.count}/5) ${format(multiply.prices[multiply.count+1])}", False, True, green), (1210, 285))
-        ptext.draw(f"\t\t\t\t- {multiply.name} -\nUses up to *{multiply.count} to multiply\ninput characters by up to {multiply.count}", (1210, 285), color=green, fontname="inconsolata.ttf")
+        ptext.draw(f"\t\t\t\t- {multiply.name} -\nUses up to *{multiply.count} to multiply\ninput characters by up to {multiply.count+1}", (1210, 285), color=green, fontname="inconsolata.ttf")
         if mouse[0] > 1209 and mouse[1] > 285 and mouse[1] < 365:
             pygame.draw.rect(screen, green, pygame.Rect(1209, 285, 390, 80), 2)
     #Photon Beam
     if photonbeam.unlocked:
         screen.blit(font.render(f"({photonbeam.count}/5) ${format(photonbeam.prices[photonbeam.count+1])}", False, True, green), (1210, 370))
-        ptext.draw(f"\t\t\t\t- {photonbeam.name} -\nUses up to *{photonbeam.count} to\nadd 50 characters per * used", (1210, 370), color=green, fontname="inconsolata.ttf")
+        ptext.draw(f"\t\t\t\t- {photonbeam.name} -\nUses up to *{photonbeam.count} to\nadd 100 characters per * used", (1210, 370), color=green, fontname="inconsolata.ttf")
         if mouse[0] > 1209 and mouse[1] > 370 and mouse[1] < 450:
             pygame.draw.rect(screen, green, pygame.Rect(1209, 370, 390, 80), 2)
     #End
