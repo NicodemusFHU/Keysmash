@@ -212,7 +212,7 @@ class BigStr():
         self.lines = lines
         self.string = string
 
-previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(4, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained."))
+previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(4, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades with left click to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained."))
 previous = list(previous)
 added = 0
 previouslen = 0
@@ -384,7 +384,7 @@ while running == True:
         screen.blit(font.render(f"+{photonbeamuses*100}", False, True, green), (1211, 720))
 
     #Stats rendering
-    if previous[-1].string != "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained." and previous[-1]:
+    if previous[-1].string != "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades with left click to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained." and previous[-1]:
         if charge.count > 0:
             screen.blit(font.render(f"+${format(added)}, +*{format(addedcharges)}", True, green), (1211, 870))
         else:
