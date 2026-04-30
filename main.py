@@ -10,7 +10,7 @@ font = pygame.font.Font("inconsolata.ttf", 24)
 green = pygame.Color("green")
 black = pygame.Color("black")
 
-usd = 9999999
+usd = 0
 questioncount = 0
 def format(n):
     if n == "MAX":
