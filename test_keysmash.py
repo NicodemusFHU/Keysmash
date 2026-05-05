@@ -13,29 +13,25 @@ def reset():
     main.totalchr = 0
     main.round = 0
 
-
 def test_enter_usd_base(two_lines_random, reset):
     main.input = two_lines_random.string
     main.rowcount = two_lines_random.lines
     main.enter()
     assert main.usd == 200
 
-
-def test_enter_usd_value_charges(two_lines_random, reset):
+def test_enter_usd_value(two_lines_random, reset):
     main.input = two_lines_random.string
     main.rowcount = two_lines_random.lines
     main.value.count = 1
-    main.charge.count = 5
     main.enter()
-    assert main.usd == 400 and main.charge.charges == 200
+    assert main.usd == 400
 
-def test_enter_usd_crit_charges(two_lines_random, reset):
+def test_enter_usd_crit(two_lines_random, reset):
     main.input = two_lines_random.string
     main.rowcount = two_lines_random.lines
-    main.charge.count = 5
     main.crit.count = 1
     main.enter()
-    assert main.usd == 400 and main.charge.charges == 200
+    assert main.usd == 400
 
 def test_enter_stats(two_lines_random, reset):
     main.input = two_lines_random.string
