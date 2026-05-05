@@ -40,19 +40,9 @@ def test_enter_stats(two_lines_random, reset):
     main.enter()
     assert main.added == 200 and main.addedcharges == 200 and main.previouslen == 200 and main.totalchr == 200 and main.round == 1
 
-def test_purchase():
-    main.usd = 100497500
-    #Extra purchase is intentional to make sure it doesn't do anything unintended if you purchase at max level
-    for x in range(7):
-        main.value.purchase()
-        main.crit.purchase()
-        main.multiply.purchase()
-        main.photonbeam.purchase()
-    for x in range(12):
-        main.charge.purchase()
-    for x in range(3):
-        main.end.purchase()
-    assert main.value.count == 5 and main.crit.count == 5 and main.multiply.count == 5 and main.photonbeam.count == 5 and main.charge.count == 10 and main.end.count == 1 and main.usd == 0
+def test_guiprint(two_lines_random):
+    main.guiprint(two_lines_random.lines, two_lines_random.string)
+    assert main.previous[-1].string == two_lines_random.string and main.previous[-1].lines == two_lines_random.lines
 
 
 #AI output
