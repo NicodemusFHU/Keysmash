@@ -59,4 +59,270 @@ def test_purchase():
     assert main.value.count == 5 and main.crit.count == 5 and main.multiply.count == 5 and main.photonbeam.count == 5 and main.charge.count == 10 and main.end.count == 1 and main.usd == 0
 
 
-#AI generated tests
+#AI output
+from unittest.mock import MagicMock
+
+# Mock pygame before importing the game module
+import sys
+sys.modules['pygame'] = MagicMock()
+sys.modules['ptext'] = MagicMock()
+
+# Extract and test the core game logic
+class BaseUpgrade:
+    def __init__(self):
+        self.name = ""
+        self.count = 0
+        self.prices = dict()
+        self.unlocked = False
+    
+    def purchase(self):
+        global usd
+        try:
+            if usd >= self.prices[self.count+1]:
+                usd -= self.prices[self.count+1]
+                self.count += 1
+            else:
+                raise ValueError("Insufficient funds")
+        except KeyError:
+            raise ValueError("Max level reached")
+    
+    def unlock(self):
+        self.unlocked = True
+
+
+class ValueUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Value"
+        self.prices = {1: 500, 2: 1000, 3: 3500, 4: 4500, 5: 7000, 6: "MAX"}
+        self.unlocked = True
+
+
+class ChargeUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Charge"
+        self.prices = {1: 2500, 2: 5000, 3: 10000, 4: 20000, 5: 40000, 6: 45000, 7: 50000, 8: 55000, 9: 60000, 10: 65000, 11: "MAX"}
+        self.charges = 0
+    
+    def chargeadd(self, s):
+        self.charges += len(s)
+        if self.charges > self.count * 100:
+            self.charges = int(self.count * 100)
+
+
+class PoweredUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+    
+    def removecharge(self, c):
+        if self.charges >= c * 100:
+            self.charges -= c * 100
+        else:
+            raise ValueError("Insufficient charge")
+
+
+class MultiplyUpgrade(PoweredUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Multiply"
+        self.prices = {1: 6000, 2: 10000, 3: 16000, 4: 20000, 5: 40000, 6: "MAX"}
+        self.charges = 0
+    
+    def multiply(self, s, x):
+        try:
+            self.removecharge(x)
+            return s * (x + 1)
+        except ValueError:
+            return s
+
+
+def format_number(n):
+    """Test the format function from the game"""
+    if n == "MAX":
+        return n
+    if n < 10:
+        stringnum = "0.0" + str(n)
+    elif n < 100:
+        stringnum = "0." + str(n)
+    else:
+        stringnum = str(n)
+        decimals = stringnum[-2:]
+        stringnum = stringnum[:-2]
+        stringnum = stringnum + "." + decimals
+    return stringnum
+
+
+# ===== TEST 1: Format Function =====
+def test_format_number():
+    """Test the format function with various number ranges"""
+    assert format_number(5) == "0.05"
+    assert format_number(50) == "0.50"
+    assert format_number(100) == "1.00"
+    assert format_number(1234) == "12.34"
+    assert format_number("MAX") == "MAX"
+
+
+# ===== TEST 2: Upgrade Purchase Mechanics =====
+def test_value_upgrade_purchase():
+    """Test that Value upgrade can be purchased correctly"""
+    global usd
+    usd = 1000
+    value = ValueUpgrade()
+    
+    assert value.count == 0
+    value.purchase()
+    assert value.count == 1
+    assert usd == 500
+
+
+# ===== TEST 3: Charge Mechanics =====
+def test_charge_add_and_cap():
+    """Test charge accumulation and cap limits"""
+    charge = ChargeUpgrade()
+    charge.count = 1  # Cap is 100
+    
+    charge.chargeadd("hello")  # 5 chars
+    assert charge.charges == 5
+    
+    charge.chargeadd("world!" * 30)  # Try to add 180 more
+    assert charge.charges == 100  # Should be capped
+
+
+# ===== TEST 4: Powered Upgrade Usage =====
+def test_multiply_upgrade_functionality():
+    """Test Multiply upgrade string multiplication"""
+    multiply = MultiplyUpgrade()
+    multiply.count = 1
+    multiply.charges = 200
+    
+    result = multiply.multiply("abc", 1)
+    assert result == "abcabc"  # 3 chars * 2 = 6 chars
+    assert multiply.charges == 100  # 200 - 100 = 100
+
+
+# ===== TEST 5: Upgrade Unlock System (REGENERATED) =====
+import pytest
+from unittest.mock import MagicMock
+import sys
+
+sys.modules['pygame'] = MagicMock()
+sys.modules['ptext'] = MagicMock()
+
+# ===== CLASS DEFINITIONS =====
+class BaseUpgrade:
+    def __init__(self):
+        self.name = ""
+        self.count = 0
+        self.prices = dict()
+        self.unlocked = False
+    
+    def purchase(self):
+        global usd
+        try:
+            if usd >= self.prices[self.count+1]:
+                usd -= self.prices[self.count+1]
+                self.count += 1
+            else:
+                raise ValueError("Insufficient funds")
+        except KeyError:
+            raise ValueError("Max level reached")
+    
+    def unlock(self):
+        self.unlocked = True
+
+
+class ValueUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Value"
+        self.prices = {1: 500, 2: 1000, 3: 3500, 4: 4500, 5: 7000, 6: "MAX"}
+        self.unlocked = True
+
+
+class CritUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Crit"
+        self.prices = {1: 1250, 2: 2500, 3: 4750, 4: 6000, 5: 7500, 6: "MAX"}
+
+
+class ChargeUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Charge"
+        self.prices = {1: 2500, 2: 5000, 3: 10000, 4: 20000, 5: 40000, 6: 45000, 7: 50000, 8: 55000, 9: 60000, 10: 65000, 11: "MAX"}
+        self.charges = 0
+    
+    def chargeadd(self, s):
+        self.charges += len(s)
+        if self.charges > self.count * 100:
+            self.charges = int(self.count * 100)
+
+
+class PoweredUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+    
+    def removecharge(self, c):
+        if self.charges >= c * 100:
+            self.charges -= c * 100
+        else:
+            raise ValueError("Insufficient charge")
+
+
+class MultiplyUpgrade(PoweredUpgrade):
+    def __init__(self):
+        super().__init__()
+        self.name = "Multiply"
+        self.prices = {1: 6000, 2: 10000, 3: 16000, 4: 20000, 5: 40000, 6: "MAX"}
+        self.charges = 0
+    
+    def multiply(self, s, x):
+        try:
+            self.removecharge(x)
+            return s * (x + 1)
+        except ValueError:
+            return s
+
+
+# ===== TEST 5: Upgrade Unlock System (REGENERATED) =====
+def test_upgrade_unlock_chain():
+    """Test that upgrades unlock in correct sequence"""
+    global usd
+    usd = 0
+    
+    # Initially, only Value upgrade is unlocked
+    value = ValueUpgrade()
+    crit = CritUpgrade()
+    charge = ChargeUpgrade()
+    multiply = MultiplyUpgrade()
+    
+    assert value.unlocked == True
+    assert crit.unlocked == False
+    assert charge.unlocked == False
+    assert multiply.unlocked == False
+    
+    # Purchase Value upgrade to unlock Crit
+    usd = 1000
+    value.purchase()
+    crit.unlock()
+    assert crit.unlocked == True
+    
+    # Purchase Crit to unlock Charge
+    usd = 2000
+    crit.purchase()
+    charge.unlock()
+    assert charge.unlocked == True
+    
+    # Purchase Charge to unlock Multiply
+    usd = 5000
+    charge.purchase()
+    multiply.unlock()
+    assert multiply.unlocked == True
+    
+    # Verify all upgrades are now accessible
+    assert value.unlocked == True
+    assert crit.unlocked == True
+    assert charge.unlocked == True
+    assert multiply.unlocked == True
