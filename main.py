@@ -3,6 +3,7 @@ import sys
 import ptext
 import random
 
+#Pygame setup
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode([1600, 900])
@@ -10,8 +11,7 @@ font = pygame.font.Font("inconsolata.ttf", 24)
 green = pygame.Color("green")
 black = pygame.Color("black")
 
-usd = 0
-questioncount = 0
+#Format int number to display as decimal
 def format(n):
     if n == "MAX":
         return n
@@ -26,6 +26,7 @@ def format(n):
         stringnum = stringnum + "." + decimals
     return stringnum
 
+#Base classes for upgrades
 class BaseUpgrade:
     def __init__(self):
         self.name = ""
@@ -47,6 +48,16 @@ class BaseUpgrade:
     def unlock(self):
         self.unlocked = True
 
+class PoweredUpgrade(BaseUpgrade):
+    def __init__(self):
+        super().__init__()
+    def removecharge(self, c):
+        if charge.charges >= c * 100:
+            charge.charges -= c * 100
+        else:
+            raise ValueError
+
+#Upgrade classes
 class ValueUpgrade(BaseUpgrade):
     def __init__(self):
         super().__init__()
@@ -66,7 +77,6 @@ class ValueUpgrade(BaseUpgrade):
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
-value = ValueUpgrade()
 
 class CritUpgrade(BaseUpgrade):
     def __init__(self):
@@ -86,7 +96,6 @@ class CritUpgrade(BaseUpgrade):
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
-crit = CritUpgrade()
 
 class ChargeUpgrade(BaseUpgrade):
     def __init__(self):
@@ -117,17 +126,6 @@ class ChargeUpgrade(BaseUpgrade):
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
 
-charge = ChargeUpgrade()
-
-class PoweredUpgrade(BaseUpgrade):
-    def __init__(self):
-        super().__init__()
-    def removecharge(self, c):
-        if charge.charges >= c * 100:
-            charge.charges -= c * 100
-        else:
-            raise ValueError
-
 class MultiplyUpgrade(PoweredUpgrade):
     def __init__(self):
         super().__init__()
@@ -156,7 +154,6 @@ class MultiplyUpgrade(PoweredUpgrade):
                 guiprint(0, f"You do not have enough $ to purchase this upgrade.")
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
-multiply = MultiplyUpgrade()
 
 class PhotonBeamUpgrade(PoweredUpgrade):
     def __init__(self):
@@ -187,8 +184,6 @@ class PhotonBeamUpgrade(PoweredUpgrade):
         except:
             guiprint(0, f"Cannot purchase {self.name} upgrade, max level already reached.")
 
-photonbeam = PhotonBeamUpgrade()
-
 class End(BaseUpgrade):
     def __init__(self):
         super().__init__()
@@ -205,47 +200,86 @@ class End(BaseUpgrade):
                 guiprint(0, f"You do not have enough $.")
         except:
             guiprint(0, f"Ending already attained.")
+
+#Objects for upgrades
+value = ValueUpgrade()
+crit = CritUpgrade()
+charge = ChargeUpgrade()
+multiply = MultiplyUpgrade()
+photonbeam = PhotonBeamUpgrade()
 end = End()
 
+#BigStr class to easily store line offsets
 class BigStr():
     def __init__(self, lines=0, string=str()):
         self.lines = lines
         self.string = string
 
+#Initial variables
 previous = (BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(),BigStr(4, "Welcome to Keysmash, you are employed by The Corporation.\nThe characters you input are used for true random, your wage is $0.01 per character.\nPurchase upgrades with left click to increase the money you can generate.\nNew upgrades can be unlocked by purchasing the previous upgrade.\nOnce all upgrades are purchased, an ending can be attained."))
 previous = list(previous)
+usd = 0
 added = 0
 previouslen = 0
 addedcharges = 0
 totalchr = 0
 multiplyuses = 0
 photonbeamuses = 0
+rowcount = 0
+round = 0
+string = str()
+input = str()
+
+#Function to "print" to the GUI
 def guiprint(rc, s):
     global previous
     if len(previous) == 10:
         previous.pop(0)
     previous.append(BigStr(rc, s))
+
+#Handles everything that needs to happen when return is pressed
 def enter():
-    global previous
-    global string
+    #Ensure that global variables work properly
+    global usd
     global input
+    global string
     global rowcount
+    global previous
     global added
-    global value
-    global crit
     global previouslen
     global round
     global totalchr
+    global value
+    global crit
+    global charge
+    global multiply
+    global end
     global multiplyuses
     global photonbeamuses
 
-    if len(previous) == 10:
-        previous.pop(0)
+    #Prevents new lines from being scored
     string = input.replace("\n", "")
-    previous.append(BigStr(rowcount, input))
-    input = str()
+    #Scores $ and *
+    if end.count > 0:
+        if len(string) % 100 == 0 and crit.count != 0 and string != "":
+            added = ((len(string) * 100 * (value.count+1)) * (crit.count+1))
+        else:
+            added = (len(string) * 100 * (value.count+1))
+    else:
+        if len(string) % 100 == 0 and crit.count != 0 and string != "":
+            added = ((len(string) * (value.count+1)) * (crit.count+1))
+            totalchr += len(string)
+        else:
+            added = (len(string) * (value.count+1))
     if charge.count > 0:
         charge.chargeadd(string)
+
+    #Handles previous input
+    if len(previous) == 10:
+        previous.pop(0)
+    previous.append(BigStr(rowcount, input))
+
+    #Powered upgrade uses
     if photonbeamuses > 0:
         string = photonbeam.beam(string, photonbeamuses)
         if previous[-1].string != "Insufficient charge to use Photon Beam":
@@ -258,28 +292,21 @@ def enter():
             previous[-1].string += f"\nX{multiplyuses+1}"
             previous[-1].lines += 1
         multiplyuses = 0
+
+    #Reset and stats
+    usd += added
+    totalchr += len(string)
+    input = str()
     previouslen = len(string)
-    if end.unlocked:
-        if len(string) % 100 == 0 and crit.count != 0 and string != "":
-            added = ((len(string) * 100 * (value.count+1)) * (crit.count+1))
-            totalchr += len(string)
-        else:
-            added = (len(string) * 100 * (value.count+1))
-            totalchr += len(string)
-    else:
-        if len(string) % 100 == 0 and crit.count != 0 and string != "":
-            added = ((len(string) * (value.count+1)) * (crit.count+1))
-            totalchr += len(string)
-        else:
-            added = (len(string) * (value.count+1))
-            totalchr += len(string)
     rowcount = 0
     round += 1
 
-string = str()
-input = str()
-rowcount = 0
-round = 0
+def quit():
+    global running
+    running = False
+    pygame.quit
+    sys.exit
+
 #Game loop
 running = True
 while running == True:
@@ -292,28 +319,21 @@ while running == True:
                 input = str()
                 rowcount = 0
             elif event.key == pygame.K_RETURN:
+                #Immersive quit
+                if input.lower() == "quit":
+                    quit()
                 if input != "":
                     enter()
-                    if end.count > 0:
-                        if len(string) % 100 == 0 and crit.count != 0 and string != "":
-                            usd += ((len(string) * 100 * (value.count+1)) * (crit.count+1))
-                        else:
-                            usd += (len(string) * 100 * (value.count+1))
-                    else:
-                        if len(string) % 100 == 0 and crit.count != 0 and string != "":
-                            usd += ((len(string) * (value.count+1)) * (crit.count+1))
-                        else:
-                            usd += (len(string) * (value.count+1))
             elif event.key != pygame.K_TAB:
                 if len(input.split("\n")[-1]) == 100:
                     input +="\n"
                     rowcount +=1
                 input += event.unicode
-        #External quit handling
+        #External quit
         if event.type == pygame.QUIT:
-            running = False
-            pygame.quit
-            sys.exit
+            quit()
+
+        #Click handling
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
                 if mouse[0] > 1209 and mouse[1] >= 30 and mouse[1] < 100:
@@ -341,6 +361,7 @@ while running == True:
                     if mouse[0] > 1211 and mouse[0] < 1237 and mouse[1] > 720 and mouse[1] < 746:
                         if photonbeam.count > photonbeamuses:
                             photonbeamuses += 1
+        #Powered upgrade activation click
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 3:
                 if multiply.count > 0:
@@ -352,11 +373,12 @@ while running == True:
                         if photonbeamuses > 0:
                             photonbeamuses -= 1
 
+    #Clear elements
+    screen.fill(black)
 
     #Mouse position
     mouse = pygame.mouse.get_pos()
-    
-    screen.fill(black)
+
     #Textbox rendering
     pygame.draw.rect(screen, green, pygame.Rect(0, 870-rowcount*26, 1209, 30+rowcount*26), 2)
     ptext.draw(input, (5, 870-rowcount*26), color=green, fontname="inconsolata.ttf")
@@ -372,6 +394,7 @@ while running == True:
     ptext.draw(previous[-8].string, (5, 595-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
     ptext.draw(previous[-9].string, (5, 560-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
     ptext.draw(previous[-10].string, (5, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), color=green, fontname="inconsolata.ttf")
+    #Add line after previous inputs
     if previous[-10].string != "":
         pygame.draw.line(screen, green, (0, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), (1211, 525-previous[-10].lines*26-previous[-9].lines*26-previous[-8].lines*26-previous[-7].lines*26-previous[-6].lines*26-previous[-5].lines*26-previous[-4].lines*26-previous[-3].lines*26-previous[-2].lines*26-previous[-1].lines*26-rowcount*26), 2)
 
@@ -440,6 +463,9 @@ while running == True:
             pygame.draw.rect(screen, green, pygame.Rect(1209, 455, 390, 80), 2)
 
     #Frame advancing, window title
-    pygame.display.set_caption(f"Keysmash: ${format(usd)}")
+    if charge.count > 0:
+        pygame.display.set_caption(f"Keysmash: ${format(usd)}, *{format(charge.charges)}/{charge.count}")
+    else:
+        pygame.display.set_caption(f"Keysmash: ${format(usd)}")
     pygame.display.flip()
     clock.tick()
