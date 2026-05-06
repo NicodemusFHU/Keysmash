@@ -268,7 +268,6 @@ def enter():
     else:
         if len(string) % 100 == 0 and crit.count != 0 and string != "":
             added = ((len(string) * (value.count+1)) * (crit.count+1))
-            totalchr += len(string)
         else:
             added = (len(string) * (value.count+1))
     if charge.count > 0:
